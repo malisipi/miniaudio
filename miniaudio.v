@@ -284,9 +284,9 @@ pub fn (mut d AudioDevice) free() {
 	// C.ma_decoder_uninit(d.decoder)
 	C.ma_context_uninit(d.context)
 	C.ma_mutex_uninit(d.mutex)
-	d.context = &C.ma_context(0)
-	d.mutex = &C.ma_mutex(0)
-	d.device = &C.ma_device(0)
+	d.context = unsafe { &C.ma_context(nil) }
+	d.mutex = unsafe { &C.ma_mutex(nil) }
+	d.device = unsafe { &C.ma_device(nil) }
 	// d.decoder = 0
 }
 
@@ -346,7 +346,7 @@ fn log_callback(p_context &C.ma_context, p_device &C.ma_device, logLevel u32, me
 fn data_callback(p_device &C.ma_device, p_output voidptr, p_input voidptr, frame_count u32) {
 	// Most of this function is heavily inspired, if not outright copied
 	// from raylib: https://github.com/raysan5/raylib/blob/c20ccfe274f94d29dcf1a1f84048a57d56dedce6/src/raudio.c#L275
-	d := &AudioDevice(p_device.pUserData)
+	d := unsafe { &AudioDevice(p_device.pUserData) }
 	if d == C.NULL {
 		return
 	}
@@ -387,7 +387,7 @@ fn data_callback(p_device &C.ma_device, p_output voidptr, p_input voidptr, frame
 
 	keys := d.buffers.keys()
 	for key in keys {
-		audio_buffer := d.buffers[key]
+		audio_buffer := unsafe { d.buffers[key] }
 		// mut ab := audio_buffer
 		// ab.mutex.lock()
 		// println('ab: '+audio_buffer.playing.str())
